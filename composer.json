@@ -6,10 +6,8 @@
     "PHP",
     "AST",
     "Abstract Syntax Tree",
-    "Code Analysis",
     "Code Transformation",
-    "Parser",
-    "Code Generation"
+    "Parser"
   ],
   "license": "MIT",
   "require": {

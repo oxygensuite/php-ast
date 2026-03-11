@@ -9,7 +9,6 @@
     "Code Analysis",
     "Code Transformation",
     "Parser",
-    "Static Analysis",
     "Code Generation"
   ],
   "license": "MIT",

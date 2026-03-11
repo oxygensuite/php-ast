@@ -33,6 +33,7 @@ readonly class GroupFunction extends AbstractFormula
      *
      * @param array $array The array to group
      * @param string $key The key to group by
+     *
      * @return array The grouped array
      */
     private function groupBy(array $array, string $key): array

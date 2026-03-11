@@ -34,6 +34,7 @@ class FormulaRegistry
 
     /**
      * @param string $formula
+     *
      * @return array{0: Formula|null, 1: string|null}
      */
     public static function getHandler(string $formula): array

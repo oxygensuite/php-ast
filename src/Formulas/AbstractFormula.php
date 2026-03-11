@@ -2,7 +2,6 @@
 
 namespace OxygenSuite\PhpAst\Formulas;
 
-
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 
 /**
@@ -10,10 +9,11 @@ use OxygenSuite\PhpAst\AST\ASTEvaluator;
  * Template Method Pattern: Provides default implementation for backward compatibility
  * Liskov Substitution Principle: Subclasses can be used interchangeably
  */
-readonly abstract class AbstractFormula implements Formula
+abstract readonly class AbstractFormula implements Formula
 {
     /**
      * Legacy method: parse string arguments and delegate to executeWithArgs
+     *
      * @deprecated Override executeWithArgs instead
      */
     public function execute(string $arguments, array $data, FormulaEvaluator $evaluator): float|int|string|array
@@ -24,7 +24,7 @@ readonly abstract class AbstractFormula implements Formula
         // Evaluate each argument using the old evaluator
         $evaluatedArgs = array_map(
             fn($arg) => $evaluator->evaluate($arg, $data),
-            $args
+            $args,
         );
 
         // Create a temporary AST evaluator to bridge the gap

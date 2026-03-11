@@ -7,9 +7,7 @@ namespace OxygenSuite\PhpAst\AST;
  */
 readonly class VariableNode implements ASTNode
 {
-    public function __construct(public string $path)
-    {
-    }
+    public function __construct(public string $path) {}
 
     public function accept(ASTVisitor $visitor, array $context): mixed
     {

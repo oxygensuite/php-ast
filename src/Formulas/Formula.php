@@ -14,12 +14,14 @@ interface Formula
 
     /**
      * Execute with string arguments (legacy support)
+     *
      * @deprecated Use executeWithArgs instead
      */
     public function execute(string $arguments, array $data, FormulaEvaluator $evaluator): float|int|string|array;
 
     /**
      * Execute with pre-evaluated arguments (new AST-based approach)
+     *
      * @param array $arguments Pre-evaluated argument values
      * @param array $data Data context
      * @param ASTEvaluator $evaluator Evaluator for nested evaluations if needed

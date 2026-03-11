@@ -17,12 +17,14 @@ readonly class SortFunction extends AbstractFormula
 
         if (is_array($result)) {
             sort($result);
+
             return $result;
         }
 
         // sort string
         $result = mb_str_split((string) $result);
         sort($result);
+
         return implode('', $result);
     }
 }

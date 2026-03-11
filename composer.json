@@ -19,6 +19,7 @@
     "ext-mbstring": "*"
   },
   "require-dev": {
+    "laravel/pint": "^1.28",
     "phpunit/phpunit": "^13.0",
     "roave/security-advisories": "dev-latest"
   },

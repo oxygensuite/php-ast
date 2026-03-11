@@ -39,7 +39,7 @@ class GroupFormulaTest extends FormulaTestCase
                 ['id' => 3, 'category' => 'A', 'value' => 30],
                 ['id' => 4, 'category' => 'C', 'value' => 40],
                 ['id' => 5, 'category' => 'B', 'value' => 50],
-            ]
+            ],
         ]);
 
         // Should group by category: A, B, C
@@ -70,7 +70,7 @@ class GroupFormulaTest extends FormulaTestCase
                 ['name' => 'Product B', 'type' => 2, 'price' => 200],
                 ['name' => 'Product C', 'type' => 1, 'price' => 150],
                 ['name' => 'Product D', 'type' => 3, 'price' => 300],
-            ]
+            ],
         ]);
 
         // Should group by type: 1, 2, 3
@@ -107,7 +107,7 @@ class GroupFormulaTest extends FormulaTestCase
                 ['id' => 1, 'category' => 'A'],
                 ['id' => 2], // Missing category key
                 ['id' => 3, 'category' => 'A'],
-            ]
+            ],
         ]);
 
         // Should only group items that have the key
@@ -143,7 +143,7 @@ class GroupFormulaTest extends FormulaTestCase
                 ['name' => 'Task 2', 'completed' => false],
                 ['name' => 'Task 3', 'completed' => true],
                 ['name' => 'Task 4', 'completed' => false],
-            ]
+            ],
         ]);
 
         // Should group by completed status

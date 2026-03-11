@@ -264,9 +264,9 @@ class VariableInterpolationTest extends FormulaTestCase
         $data = [
             'level1' => [
                 'level2' => [
-                    'level3' => 'deep value'
-                ]
-            ]
+                    'level3' => 'deep value',
+                ],
+            ],
         ];
         $result = $this->evaluate('level1.level2.level3', $data);
         $this->assertEquals('deep value', $result);

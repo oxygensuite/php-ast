@@ -2,7 +2,6 @@
 
 namespace OxygenSuite\PhpAst\Formulas;
 
-
 /**
  * Utility class for parsing formula syntax
  */
@@ -49,6 +48,7 @@ class FormulaParser
         if (preg_match('/^["\'](.+)["\']$/', $value, $matches)) {
             return $matches[1];
         }
+
         return $value;
     }
 

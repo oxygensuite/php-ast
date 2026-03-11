@@ -16,6 +16,7 @@ interface ASTAwareFormula extends Formula
      * @param ASTNode[] $astNodes Raw AST nodes for arguments
      * @param array $data Data context
      * @param ASTEvaluator $evaluator Evaluator for evaluating AST nodes
+     *
      * @return mixed
      */
     public function executeWithASTNodes(array $astNodes, array $data, ASTEvaluator $evaluator): mixed;

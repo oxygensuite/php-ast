@@ -215,6 +215,7 @@ class Tokenizer
             $node = $this->parseExpression();
             $this->skipWhitespace();
             $this->consume(')');
+
             return $node;
         }
 
@@ -395,6 +396,7 @@ class Tokenizer
         if ($this->isAtEnd()) {
             return '';
         }
+
         return $this->input[$this->position];
     }
 
@@ -403,6 +405,7 @@ class Tokenizer
         if ($this->position + 1 >= $this->length) {
             return '';
         }
+
         return $this->input[$this->position + 1];
     }
 

@@ -29,6 +29,7 @@ class FormulaEvaluator
     {
         if (++$this->currentDepth > self::MAX_RECURSION_DEPTH) {
             $this->currentDepth = 0;
+
             throw new RuntimeException('Formula recursion depth exceeded');
         }
 

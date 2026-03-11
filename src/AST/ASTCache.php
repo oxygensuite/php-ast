@@ -23,10 +23,12 @@ class ASTCache
     {
         if (isset($this->cache[$formula])) {
             $this->hits++;
+
             return $this->cache[$formula];
         }
 
         $this->misses++;
+
         return null;
     }
 
@@ -55,6 +57,7 @@ class ASTCache
 
     /**
      * Get cache statistics
+     *
      * @return array{hits: int, misses: int, size: int, hitRate: float}
      */
     public function getStats(): array

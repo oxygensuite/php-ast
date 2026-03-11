@@ -7,9 +7,7 @@ namespace OxygenSuite\PhpAst\AST;
  */
 readonly class BinaryOpNode implements ASTNode
 {
-    public function __construct(public string $operator, public ASTNode $left, public ASTNode $right)
-    {
-    }
+    public function __construct(public string $operator, public ASTNode $left, public ASTNode $right) {}
 
     public function accept(ASTVisitor $visitor, array $context): mixed
     {

@@ -34,6 +34,7 @@ readonly class FlatFunction extends AbstractFormula
      *
      * @param array $array The array to flatten
      * @param int $depth The depth to flatten (0 = no flattening, 1 = one level, etc.)
+     *
      * @return array The flattened array
      */
     private function flatten(array $array, int $depth): array

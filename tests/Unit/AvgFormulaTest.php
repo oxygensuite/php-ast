@@ -6,7 +6,6 @@ use Tests\FormulaTestCase;
 
 class AvgFormulaTest extends FormulaTestCase
 {
-
     public function test_avg_with_simple_wildcard_path()
     {
         $result = $this->evaluate('AVG(PLUCK(lines; "quantity"))');

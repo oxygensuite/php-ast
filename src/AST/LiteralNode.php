@@ -7,9 +7,7 @@ namespace OxygenSuite\PhpAst\AST;
  */
 readonly class LiteralNode implements ASTNode
 {
-    public function __construct(public string|int|float|bool|null $value)
-    {
-    }
+    public function __construct(public string|int|float|bool|null $value) {}
 
     public function accept(ASTVisitor $visitor, array $context): mixed
     {

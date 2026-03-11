@@ -7,9 +7,7 @@ namespace OxygenSuite\PhpAst\ContextProvider;
  */
 readonly class DataResolver
 {
-    public function __construct(private ?ContextProvider $contextProvider = null)
-    {
-    }
+    public function __construct(private ?ContextProvider $contextProvider = null) {}
 
     /**
      * Resolve a dotted path in an array (e.g., "customer.name")
@@ -17,6 +15,7 @@ readonly class DataResolver
      * @param array $data The data array to resolve from
      * @param string $key The dotted path key
      * @param mixed $default The default value if the path not found
+     *
      * @return mixed The resolved value or default
      */
     public function resolve(array $data, string $key, mixed $default = null): mixed
@@ -41,8 +40,10 @@ readonly class DataResolver
 
     /**
      * Resolve a variable path to its value (for AST evaluation)
+     *
      * @param string $path Variable path (e.g., "invoice.total", "line.quantity")
      * @param array $data Data context
+     *
      * @return mixed Resolved value
      */
     public function resolveVariable(string $path, array $data): mixed

@@ -12,7 +12,7 @@ class FormulaTestCase extends TestCase
     {
         parent::setUp();
 
-        $this->data = require __DIR__.'/data/invoice.php';
+        $this->data = require __DIR__ . '/data/invoice.php';
     }
 
     protected function evaluate(string $formula, ?array $context = null): mixed

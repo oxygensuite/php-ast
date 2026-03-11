@@ -37,7 +37,7 @@ readonly class MapFunction implements ASTAwareFormula
         }
 
         // Evaluate the callback expression for each item
-        return array_map(fn ($item) => $evaluator->evaluate($callbackExpr, $item), $items);
+        return array_map(fn($item) => $evaluator->evaluate($callbackExpr, $item), $items);
     }
 
     public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): array
@@ -72,7 +72,7 @@ readonly class MapFunction implements ASTAwareFormula
         // Evaluate callback AST node for each item
         return array_map(
             fn($item) => $callbackNode->accept($evaluator, $item),
-            $items
+            $items,
         );
     }
 }

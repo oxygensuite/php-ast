@@ -4,8 +4,8 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTAwareFormula;
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\FormulaParser;
 use OxygenSuite\PhpAst\Formulas\FormulaEvaluator;
+use OxygenSuite\PhpAst\Formulas\FormulaParser;
 
 /**
  * FILTER function: FILTER(array; condition)
@@ -36,6 +36,7 @@ readonly class FilterFunction implements ASTAwareFormula
         // Filter items based on condition (preserve original keys)
         return array_filter($items, function ($item) use ($evaluator, $conditionExpr) {
             $result = $evaluator->evaluate($conditionExpr, $item);
+
             return $this->isTruthy($result);
         });
     }
@@ -68,6 +69,7 @@ readonly class FilterFunction implements ASTAwareFormula
         // Filter items based on condition AST node (preserve original keys)
         return array_filter($items, function ($item) use ($evaluator, $conditionNode) {
             $result = $conditionNode->accept($evaluator, $item);
+
             return $this->isTruthy($result);
         });
     }

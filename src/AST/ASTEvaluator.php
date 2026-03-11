@@ -40,6 +40,7 @@ class ASTEvaluator implements ASTVisitor
 
         // Evaluate AST with data context
         $this->currentDepth = 0;
+
         return $ast->accept($this, $data);
     }
 
@@ -57,6 +58,7 @@ class ASTEvaluator implements ASTVisitor
     {
         if (++$this->currentDepth > self::MAX_RECURSION_DEPTH) {
             $this->currentDepth = 0;
+
             throw new RuntimeException('Formula recursion depth exceeded');
         }
 
@@ -77,7 +79,7 @@ class ASTEvaluator implements ASTVisitor
             // For normal functions, evaluate all arguments first
             $evaluatedArgs = array_map(
                 fn(ASTNode $arg) => $arg->accept($this, $context),
-                $node->arguments
+                $node->arguments,
             );
 
             // Execute the function with evaluated arguments
@@ -91,6 +93,7 @@ class ASTEvaluator implements ASTVisitor
     {
         if (++$this->currentDepth > self::MAX_RECURSION_DEPTH) {
             $this->currentDepth = 0;
+
             throw new RuntimeException('Formula recursion depth exceeded');
         }
 

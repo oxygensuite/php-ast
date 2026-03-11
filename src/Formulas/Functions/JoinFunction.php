@@ -3,14 +3,14 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class JoinFunction extends AbstractFormula
+readonly class JoinFunction implements Formula
 {
     /**
      * Syntax: JOIN(data; separator)
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): string|array
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): string|array
     {
         if (count($arguments) < 2) {
             return [];

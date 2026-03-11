@@ -3,9 +3,9 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class FlatFunction extends AbstractFormula
+readonly class FlatFunction implements Formula
 {
     /**
      * Flattens an array to a specified depth.
@@ -14,7 +14,7 @@ readonly class FlatFunction extends AbstractFormula
      * Example: FLAT(nested_array; 1)
      * Example: FLAT([[1, 2], [3, [4, 5]]]; 2)
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): array
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): array
     {
         if (empty($arguments)) {
             return [];

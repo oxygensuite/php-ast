@@ -3,16 +3,16 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class FirstFunction extends AbstractFormula
+readonly class FirstFunction implements Formula
 {
     /**
      * Returns the first element of an array or the first character of a string.
      *
      * Function syntax: FIRST(data)
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): string|float|array|int|null
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): string|float|array|int|null
     {
         if (empty($arguments)) {
             return null;

@@ -3,9 +3,9 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class GroupFunction extends AbstractFormula
+readonly class GroupFunction implements Formula
 {
     /**
      * Groups an array by a specified key.
@@ -14,7 +14,7 @@ readonly class GroupFunction extends AbstractFormula
      * Example: GROUP(lines; tax_category)
      * Example: GROUP([[id: 1, category: 'A'], [id: 2, category: 'B'], [id: 3, category: 'A']]; category)
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): array
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): array
     {
         if (count($arguments) < 2) {
             return [];

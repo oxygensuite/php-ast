@@ -178,15 +178,15 @@ Context values take priority over data array values.
 
 ### Simple Function
 
-Extend `AbstractFormula` and register it:
+Implement the `Formula` interface:
 
 ```php
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class DoubleFunction extends AbstractFormula
+readonly class DoubleFunction implements Formula
 {
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): float|int|string|array
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float|int|string|array
     {
         return ($arguments[0] ?? 0) * 2;
     }
@@ -195,20 +195,24 @@ readonly class DoubleFunction extends AbstractFormula
 
 ### AST-Aware Function
 
-For functions that need per-item evaluation (like MAP/FILTER), implement `ASTAwareFormula`:
+For functions that need per-item evaluation (like MAP/FILTER), implement `ASTFormula` instead. It receives raw AST nodes so you can evaluate expressions against each item:
 
 ```php
-use OxygenSuite\PhpAst\AST\ASTAwareFormula;
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
+use OxygenSuite\PhpAst\Formulas\ASTFormula;
 
-readonly class MyTransform implements ASTAwareFormula
+readonly class MyTransform implements ASTFormula
 {
-    public function executeWithASTNodes(array $astNodes, array $data, ASTEvaluator $evaluator): mixed
+    public function execute(array $astNodes, array $data, ASTEvaluator $evaluator): mixed
     {
-        // astNodes are unevaluated AST nodes — evaluate per-item
-    }
+        [$itemsNode, $callbackNode] = $astNodes;
+        $items = $itemsNode->accept($evaluator, $data);
 
-    // ...
+        return array_map(
+            fn($item) => $callbackNode->accept($evaluator, $item),
+            $items,
+        );
+    }
 }
 ```
 

@@ -3,15 +3,15 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class FloorFunction extends AbstractFormula
+readonly class FloorFunction implements Formula
 {
     /**
      * Syntax: FLOOR(value)
      * Example: FLOOR(10.9) => 10
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): float
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float
     {
         if (empty($arguments)) {
             return 0;

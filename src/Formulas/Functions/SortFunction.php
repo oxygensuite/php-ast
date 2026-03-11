@@ -3,11 +3,11 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class SortFunction extends AbstractFormula
+readonly class SortFunction implements Formula
 {
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): string|array
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): string|array
     {
         if (empty($arguments)) {
             return [];

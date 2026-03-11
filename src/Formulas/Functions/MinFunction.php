@@ -3,14 +3,14 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class MinFunction extends AbstractFormula
+readonly class MinFunction implements Formula
 {
     /**
      * Syntax: MIN(data/formula)
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): float
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float
     {
         if (empty($arguments)) {
             return 0;

@@ -43,7 +43,7 @@ class FormulaEvaluator
             [$handler, $args] = FormulaRegistry::getHandler($formula);
 
             if ($handler) {
-                // Use AST evaluator which will call handler->executeWithArgs()
+                // Use AST evaluator which will call handler->execute()
                 // This allows full AST parsing with FunctionNodes
                 return $this->astEvaluator->evaluate($formula, $data);
             }

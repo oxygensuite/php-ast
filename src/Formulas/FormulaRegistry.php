@@ -13,7 +13,7 @@ class FormulaRegistry
     public static string $FORMULA_PATTERN = '';
     public static string $FORMULA_FUNCTION_PATTERN = '';
 
-    /** @var array<string, Formula> */
+    /** @var array<string, Formula|ASTFormula> */
     private array $handlers = [];
 
     private static FormulaRegistry $registry;
@@ -35,7 +35,7 @@ class FormulaRegistry
     /**
      * @param string $formula
      *
-     * @return array{0: Formula|null, 1: string|null}
+     * @return array{0: Formula|ASTFormula|null, 1: string|null}
      */
     public static function getHandler(string $formula): array
     {
@@ -66,7 +66,7 @@ class FormulaRegistry
     /**
      * Get handler by function name (for AST-based evaluation)
      */
-    public static function getHandlerByName(string $name): ?Formula
+    public static function getHandlerByName(string $name): Formula|ASTFormula|null
     {
         self::ensureInitialized();
 
@@ -109,7 +109,7 @@ class FormulaRegistry
         foreach ($functionFiles as $file) {
             $className = pathinfo($file, PATHINFO_FILENAME);
             $fullClassName = __NAMESPACE__ . '\\Functions\\' . $className;
-            if (class_exists($fullClassName) && is_subclass_of($fullClassName, Formula::class)) {
+            if (class_exists($fullClassName) && (is_subclass_of($fullClassName, Formula::class) || is_subclass_of($fullClassName, ASTFormula::class))) {
                 $reflection = new ReflectionClass($fullClassName);
                 if (! $reflection->isInstantiable() || $reflection->getFileName() !== realpath($file)) {
                     continue;
@@ -121,7 +121,7 @@ class FormulaRegistry
         }
     }
 
-    private function register(string $name, Formula $handler): void
+    private function register(string $name, Formula|ASTFormula $handler): void
     {
         $this->handlers[strtoupper($name)] = $handler;
     }

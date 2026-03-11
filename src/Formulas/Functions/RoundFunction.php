@@ -3,16 +3,16 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class RoundFunction extends AbstractFormula
+readonly class RoundFunction implements Formula
 {
     /**
      * Syntax: ROUND(value; precision)
      * Example: ROUND(10.567; 2) => 10.57
      * Example: ROUND(10.567) => 11 (default precision = 0)
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): float
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float
     {
         if (empty($arguments)) {
             return 0;

@@ -2,8 +2,6 @@
 
 namespace Tests\Unit;
 
-use OxygenSuite\PhpAst\Formulas\FormulaEvaluator;
-use OxygenSuite\PhpAst\Formulas\Functions\SumFunction;
 use Tests\FormulaTestCase;
 
 class SumFormulaTest extends FormulaTestCase
@@ -51,8 +49,7 @@ class SumFormulaTest extends FormulaTestCase
 
     public function test_sum_with_nested_sum()
     {
-        $sum = new SumFunction();
-        $result = $sum->execute('SUM(10 + 20 + SUM(5 + 5))', [], new FormulaEvaluator());
+        $result = $this->evaluate('SUM(10 + 20 + SUM(5 + 5))');
         $this->assertEquals(40, $result);
     }
 

@@ -4,6 +4,7 @@ namespace OxygenSuite\PhpAst\AST;
 
 use OxygenSuite\PhpAst\ContextProvider\ContextProvider;
 use OxygenSuite\PhpAst\ContextProvider\DataResolver;
+use OxygenSuite\PhpAst\Formulas\ASTFormula;
 use OxygenSuite\PhpAst\Formulas\FormulaRegistry;
 use RuntimeException;
 
@@ -72,8 +73,8 @@ class ASTEvaluator implements ASTVisitor
             }
 
             // Check if the function needs raw AST nodes (MAP, FILTER)
-            if ($handler instanceof ASTAwareFormula) {
-                return $handler->executeWithASTNodes($node->arguments, $context, $this);
+            if ($handler instanceof ASTFormula) {
+                return $handler->execute($node->arguments, $context, $this);
             }
 
             // For normal functions, evaluate all arguments first
@@ -83,7 +84,7 @@ class ASTEvaluator implements ASTVisitor
             );
 
             // Execute the function with evaluated arguments
-            return $handler->executeWithArgs($evaluatedArgs, $context, $this);
+            return $handler->execute($evaluatedArgs, $context, $this);
         } finally {
             $this->currentDepth--;
         }

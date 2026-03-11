@@ -3,15 +3,15 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
-readonly class CeilFunction extends AbstractFormula
+readonly class CeilFunction implements Formula
 {
     /**
      * Syntax: CEIL(value)
      * Example: CEIL(10.1) => 11
      */
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): float
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float
     {
         if (empty($arguments)) {
             return 0;

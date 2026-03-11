@@ -3,7 +3,7 @@
 namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
-use OxygenSuite\PhpAst\Formulas\AbstractFormula;
+use OxygenSuite\PhpAst\Formulas\Formula;
 
 /**
  * PLUCK function: PLUCK(array; "column_name")
@@ -11,9 +11,9 @@ use OxygenSuite\PhpAst\Formulas\AbstractFormula;
  *
  * Usage: PLUCK(lines; "quantity") - column name must be quoted
  */
-readonly class PluckFunction extends AbstractFormula
+readonly class PluckFunction implements Formula
 {
-    public function executeWithArgs(array $arguments, array $data, ASTEvaluator $evaluator): array
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): array
     {
         if (count($arguments) < 2) {
             return [];

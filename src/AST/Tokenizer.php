@@ -11,12 +11,18 @@ use RuntimeException;
  */
 class Tokenizer
 {
+    private const int MAX_FORMULA_LENGTH = 10_000;
+
     private int $position = 0;
     private string $input = '';
     private int $length = 0;
 
     public function tokenize(string $formula): ASTNode
     {
+        if (strlen($formula) > self::MAX_FORMULA_LENGTH) {
+            throw new RuntimeException('Formula exceeds maximum allowed length');
+        }
+
         FormulaRegistry::ensureInitialized();
 
         $this->input = trim($formula);

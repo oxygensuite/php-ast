@@ -14,6 +14,8 @@ use RuntimeException;
  */
 class FormulaEvaluator
 {
+    private const int MAX_FORMULA_LENGTH = 10_000;
+
     private const int MAX_RECURSION_DEPTH = 32;
     private DataResolver $dataResolver;
     private int $currentDepth = 0;
@@ -27,6 +29,10 @@ class FormulaEvaluator
 
     public function evaluate(string $formula, array $data): mixed
     {
+        if (strlen($formula) > self::MAX_FORMULA_LENGTH) {
+            throw new RuntimeException('Formula exceeds maximum allowed length');
+        }
+
         if (++$this->currentDepth > self::MAX_RECURSION_DEPTH) {
             $this->currentDepth = 0;
 

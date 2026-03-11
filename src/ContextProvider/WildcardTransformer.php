@@ -2,6 +2,8 @@
 
 namespace OxygenSuite\PhpAst\ContextProvider;
 
+use RuntimeException;
+
 /**
  * Transforms wildcard paths into nested PLUCK function calls
  * Example: lines.*.quantity -> PLUCK(lines; quantity)
@@ -29,6 +31,11 @@ class WildcardTransformer
     {
         if (!self::hasWildcards($path)) {
             return $path;
+        }
+
+        // Validate path segments contain only safe characters (alphanumeric, underscore, asterisk)
+        if (!preg_match('/^[a-zA-Z0-9_.*]+$/', $path)) {
+            throw new RuntimeException('Invalid wildcard path: contains disallowed characters');
         }
 
         // Split the path into segments

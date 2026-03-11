@@ -69,7 +69,7 @@ class ASTEvaluator implements ASTVisitor
             // Get the handler for this function
             $handler = FormulaRegistry::getHandlerByName($node->name);
             if ($handler === null) {
-                throw new RuntimeException("Unknown function: $node->name");
+                throw new RuntimeException('Unknown function: ' . strtoupper($node->name));
             }
 
             // Check if the function needs raw AST nodes (MAP, FILTER)
@@ -120,7 +120,7 @@ class ASTEvaluator implements ASTVisitor
             '+' => $left + $right,
             '-' => $left - $right,
             '*' => $left * $right,
-            '/' => $right != 0 ? ($left / $right) : 0,
+            '/' => $right !== 0 && $right !== 0.0 ? ($left / $right) : 0,
             '>' => $left > $right,
             '<' => $left < $right,
             '>=' => $left >= $right,
@@ -129,8 +129,8 @@ class ASTEvaluator implements ASTVisitor
             '!=' => $left != $right,
             '&&' => $left && $right,
             '||' => $left || $right,
-            '%' => $right != 0 ? ($left % $right) : 0,
-            '**' => pow($left, $right),
+            '%' => $right !== 0 && $right !== 0.0 ? ($left % $right) : 0,
+            '**' => abs($right) > 1000 ? throw new RuntimeException('Exponent exceeds maximum allowed value') : pow($left, $right),
             '<=>' => $left <=> $right,
             '??' => $left ?? $right,
             '?:' => $left ?: $right,

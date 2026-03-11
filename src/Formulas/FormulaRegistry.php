@@ -42,7 +42,11 @@ class FormulaRegistry
         self::ensureInitialized();
 
         // First, check if it starts with a function name followed by (
-        if (! preg_match('/^(' . implode('|', array_keys(self::$registry->handlers)) . ')\(/', $formula, $matches)) {
+        $escapedNames = array_map(
+            fn(string $name) => preg_quote($name, '/'),
+            array_keys(self::$registry->handlers),
+        );
+        if (! preg_match('/^(' . implode('|', $escapedNames) . ')\(/', $formula, $matches)) {
             return [null, null];
         }
 
@@ -123,13 +127,25 @@ class FormulaRegistry
 
     private function register(string $name, Formula|ASTFormula $handler): void
     {
-        $this->handlers[strtoupper($name)] = $handler;
+        $upperName = strtoupper($name);
+
+        // Only allow alphanumeric function names to prevent regex injection
+        if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $upperName)) {
+            return;
+        }
+
+        $this->handlers[$upperName] = $handler;
     }
 
     private function updatePatterns(): void
     {
         // Update regex patterns with registered function names
-        $functionNames = implode('|', array_keys($this->handlers));
+        // Escape function names to prevent ReDoS via regex metacharacters
+        $escapedNames = array_map(
+            fn(string $name) => preg_quote($name, '/'),
+            array_keys($this->handlers),
+        );
+        $functionNames = implode('|', $escapedNames);
 
         self::$FORMULA_PATTERN = '/^(' . $functionNames . ')\((.*)\)$/s';
         self::$FORMULA_FUNCTION_PATTERN = '/(' . $functionNames . ')\(/';

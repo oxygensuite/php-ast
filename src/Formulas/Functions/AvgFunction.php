@@ -4,7 +4,15 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
+#[FunctionDefinition(
+    signature: 'AVG(values; …)',
+    description: 'Average of an array, or of all arguments.',
+    example: 'AVG(lines.*.unit_price)',
+    minArguments: 1,
+    maxArguments: null,
+)]
 readonly class AvgFunction implements Formula
 {
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float

@@ -2,6 +2,7 @@
 
 namespace OxygenSuite\PhpAst\Formulas;
 
+use LogicException;
 use ReflectionClass;
 
 /**
@@ -15,6 +16,9 @@ class FormulaRegistry
 
     /** @var array<string, Formula|ASTFormula> */
     private array $handlers = [];
+
+    /** @var array<string, FunctionDefinition>|null */
+    private ?array $definitions = null;
 
     private static FormulaRegistry $registry;
 
@@ -75,6 +79,38 @@ class FormulaRegistry
         self::ensureInitialized();
 
         return self::$registry->handlers[strtoupper($name)] ?? null;
+    }
+
+    /**
+     * The registered functions with their definitions, keyed by function name; read once, as they cannot change
+     *
+     * @return array<string, FunctionDefinition>
+     * @throws LogicException When a registered function has no #[FunctionDefinition], so it cannot go missing unnoticed
+     */
+    public static function definitions(): array
+    {
+        self::ensureInitialized();
+
+        return self::$registry->definitions ??= self::$registry->readDefinitions();
+    }
+
+    /**
+     * @return array<string, FunctionDefinition>
+     */
+    private function readDefinitions(): array
+    {
+        $definitions = [];
+
+        foreach ($this->handlers as $name => $handler) {
+            $attribute = new ReflectionClass($handler)->getAttributes(FunctionDefinition::class)[0]
+                ?? throw new LogicException(sprintf('The %s function (%s) has no #[FunctionDefinition].', $name, $handler::class));
+
+            $definitions[$name] = $attribute->newInstance();
+        }
+
+        ksort($definitions);
+
+        return $definitions;
     }
 
     /**

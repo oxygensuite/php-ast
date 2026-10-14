@@ -13,6 +13,9 @@ return [
             'total_amount' => 24.8,
             'discount_amount' => 0.0,
             'tax_category' => 1,
+            'item_code' => 'P-001',
+            'item_description' => 'Product 1',
+            'taxes' => [['type' => 1, 'amount' => 0.0]],
         ],
         [
             'line_number' => 2,
@@ -23,6 +26,9 @@ return [
             'total_amount' => 55.8,
             'discount_amount' => 5.0,
             'tax_category' => 2,
+            'item_code' => 'P-002',
+            'item_description' => 'Product 2',
+            'taxes' => [['type' => 1, 'amount' => 0.0]],
         ],
         [
             'line_number' => 3,
@@ -33,6 +39,9 @@ return [
             'total_amount' => 24.8,
             'discount_amount' => 0.0,
             'tax_category' => 1,
+            'item_code' => 'P-003',
+            'item_description' => 'Product 3',
+            'taxes' => [['type' => 1, 'amount' => 0.0]],
         ],
         [
             'line_number' => 4,
@@ -43,6 +52,9 @@ return [
             'total_amount' => 49.6,
             'discount_amount' => 0.0,
             'tax_category' => 3,
+            'item_code' => 'P-004',
+            'item_description' => 'Product 4',
+            'taxes' => [['type' => 1, 'amount' => 0.0]],
         ],
         [
             'line_number' => 5,
@@ -53,6 +65,18 @@ return [
             'total_amount' => 59.52,
             'discount_amount' => 2.0,
             'tax_category' => 1,
+            'item_code' => 'P-005',
+            'item_description' => 'Product 5',
+            'taxes' => [['type' => 1, 'amount' => 0.0]],
         ],
+    ],
+    'header' => [
+        'currency' => 'EUR',
+    ],
+    'supplier' => [
+        'name' => 'Oxygen',
+    ],
+    'summary' => [
+        'total_net_amount' => 173.5,
     ],
 ];

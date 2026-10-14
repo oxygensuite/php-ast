@@ -4,12 +4,17 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
+#[FunctionDefinition(
+    signature: 'MIN(values; …)',
+    description: 'Smallest number of an array, or of all arguments.',
+    example: 'MIN(lines.*.unit_price)',
+    minArguments: 1,
+    maxArguments: null,
+)]
 readonly class MinFunction implements Formula
 {
-    /**
-     * Syntax: MIN(data/formula)
-     */
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float
     {
         if (empty($arguments)) {

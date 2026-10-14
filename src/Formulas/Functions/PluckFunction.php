@@ -4,13 +4,20 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
 /**
- * PLUCK function: PLUCK(array; "column_name")
  * Single Responsibility: Extract column from an array of arrays/objects
  *
  * Usage: PLUCK(lines; "quantity") - column name must be quoted
  */
+#[FunctionDefinition(
+    signature: 'PLUCK(array; "field")',
+    description: 'Column of an array of objects; the field name must be quoted. Same as array.*.field.',
+    example: 'PLUCK(lines; "quantity")',
+    minArguments: 2,
+    maxArguments: 2,
+)]
 readonly class PluckFunction implements Formula
 {
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): array

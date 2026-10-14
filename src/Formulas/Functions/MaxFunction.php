@@ -4,12 +4,17 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
+#[FunctionDefinition(
+    signature: 'MAX(values; …)',
+    description: 'Largest number of an array, or of all arguments.',
+    example: 'MAX(lines.*.unit_price)',
+    minArguments: 1,
+    maxArguments: null,
+)]
 readonly class MaxFunction implements Formula
 {
-    /**
-     * Syntax: MAX(data/formula)
-     */
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float
     {
         if (empty($arguments)) {

@@ -4,10 +4,15 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
-/**
- * IF function: IF(condition; trueValue; falseValue)
- */
+#[FunctionDefinition(
+    signature: 'IF(condition; then; else)',
+    description: 'then when the condition is truthy, otherwise else.',
+    example: 'IF(header.currency == "EUR"; "€"; header.currency)',
+    minArguments: 3,
+    maxArguments: 3,
+)]
 readonly class IfFunction implements Formula
 {
     use TruthyTrait;

@@ -4,11 +4,19 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\ASTFormula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
 /**
- * FILTER function: FILTER(array; condition)
  * Filters array items based on a condition expression
  */
+#[FunctionDefinition(
+    signature: 'FILTER(array; condition)',
+    description: 'Items of the array for which the condition, evaluated per item, is truthy.',
+    example: 'FILTER(lines; quantity > 0)',
+    minArguments: 2,
+    maxArguments: 2,
+    itemArgument: 1,
+)]
 readonly class FilterFunction implements ASTFormula
 {
     use TruthyTrait;

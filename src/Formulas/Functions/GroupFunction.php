@@ -4,15 +4,22 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
+#[FunctionDefinition(
+    signature: 'GROUP(array; "field")',
+    description: 'Groups the items by a field (field name quoted): each value of the field maps to the list of its items.',
+    example: 'GROUP(lines; "tax_category")',
+    minArguments: 2,
+    maxArguments: 2,
+)]
 readonly class GroupFunction implements Formula
 {
     /**
      * Groups an array by a specified key.
      *
-     * Function syntax: GROUP(data/formula; key)
-     * Example: GROUP(lines; tax_category)
-     * Example: GROUP([[id: 1, category: 'A'], [id: 2, category: 'B'], [id: 3, category: 'A']]; category)
+     * Example: GROUP(lines; "tax_category")
+     * Example: GROUP([[id: 1, category: 'A'], [id: 2, category: 'B'], [id: 3, category: 'A']]; "category")
      */
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): array
     {

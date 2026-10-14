@@ -4,13 +4,20 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
+#[FunctionDefinition(
+    signature: 'FLAT(array; depth?)',
+    description: 'Flattens nested arrays (depth defaults to 1).',
+    example: 'FLAT(lines.*.taxes)',
+    minArguments: 1,
+    maxArguments: 2,
+)]
 readonly class FlatFunction implements Formula
 {
     /**
      * Flattens an array to a specified depth.
      *
-     * Function syntax: FLAT(data/formula; depth)
      * Example: FLAT(nested_array; 1)
      * Example: FLAT([[1, 2], [3, [4, 5]]]; 2)
      */

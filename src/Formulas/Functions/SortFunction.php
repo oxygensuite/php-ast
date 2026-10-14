@@ -4,7 +4,15 @@ namespace OxygenSuite\PhpAst\Formulas\Functions;
 
 use OxygenSuite\PhpAst\AST\ASTEvaluator;
 use OxygenSuite\PhpAst\Formulas\Formula;
+use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
+#[FunctionDefinition(
+    signature: 'SORT(values)',
+    description: 'Sorts an array ascending (or the characters of a string).',
+    example: 'SORT(lines.*.item_code)',
+    minArguments: 1,
+    maxArguments: 1,
+)]
 readonly class SortFunction implements Formula
 {
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): string|array

@@ -29,7 +29,15 @@ class Tokenizer
         $this->length = strlen($this->input);
         $this->position = 0;
 
-        return $this->parseExpression();
+        $node = $this->parseExpression();
+
+        // Whatever the expression could not read is a mistake, not something to drop
+        $this->skipWhitespace();
+        if (!$this->isAtEnd()) {
+            throw new RuntimeException("Unexpected character '{$this->peek()}' at position {$this->position}");
+        }
+
+        return $node;
     }
 
     private function parseExpression(): ASTNode
@@ -205,8 +213,20 @@ class Tokenizer
             return $this->parseStringLiteral();
         }
 
+        // A leading minus negates the term after it: a number, a variable, a call or a bracket
+        if ($this->peek() === '-') {
+            $this->position++;
+            $operand = $this->parseTerm();
+
+            if ($operand instanceof LiteralNode && (is_int($operand->value) || is_float($operand->value))) {
+                return new LiteralNode(-$operand->value);
+            }
+
+            return new BinaryOpNode('-', new LiteralNode(0), $operand);
+        }
+
         // Try to parse number
-        if (is_numeric($this->peek()) || $this->peek() === '-') {
+        if (is_numeric($this->peek())) {
             return $this->parseNumber();
         }
 
@@ -228,46 +248,59 @@ class Tokenizer
         throw new RuntimeException("Unexpected character '{$this->peek()}' at position {$this->position}");
     }
 
+    /**
+     * A call starts with a word directly followed by "(". Names are case-sensitive: only upper-case registered ones exist.
+     *
+     * @throws RuntimeException When the word is not a function, or the call is malformed or has the wrong argument count
+     */
     private function tryParseFunction(): ?FunctionNode
     {
-        $savedPosition = $this->position;
-
-        // Try to match function name
-        $functionName = $this->peekFunctionName();
-        if ($functionName === null) {
+        if (!preg_match('/\G([A-Za-z_]\w*)\(/', $this->input, $matches, 0, $this->position)) {
             return null;
         }
 
-        // Check if followed by (
-        $pos = $this->position + strlen($functionName);
-        if ($pos >= $this->length || $this->input[$pos] !== '(') {
-            return null;
-        }
+        $functionName = $matches[1];
+        $definition = FormulaRegistry::definitions()[$functionName]
+            ?? throw new RuntimeException("Unknown function '$functionName' at position {$this->position}");
 
         // Consume function name and opening parenthesis
-        $this->position = $pos + 1;
+        $this->position += strlen($functionName) + 1;
 
         // Parse arguments
         $arguments = [];
         $this->skipWhitespace();
 
         if ($this->peek() !== ')') {
-            do {
+            while (true) {
                 $this->skipWhitespace();
+
+                if ($this->peek() === ';' || $this->peek() === ')') {
+                    throw new RuntimeException("Missing argument of {$functionName}() at position {$this->position}");
+                }
+
                 $arguments[] = $this->parseExpression();
                 $this->skipWhitespace();
 
-                if ($this->peek() === ';') {
-                    $this->consume(';');
-                } elseif ($this->peek() !== ')') {
+                if ($this->peek() === ')') {
+                    break;
+                }
+
+                if ($this->peek() !== ';') {
                     throw new RuntimeException("Expected ';' or ')' at position $this->position");
                 }
-            } while ($this->peek() !== ')');
+
+                $this->consume(';');
+            }
         }
 
         $this->consume(')');
 
-        return new FunctionNode(strtoupper($functionName), $arguments);
+        // Checked here, where every call is built, so a call is rejected even where the data never reaches it
+        if (!$definition->acceptsArgumentCount(count($arguments))) {
+            throw new RuntimeException(sprintf('%s() expects %s argument(s), %d given', $functionName, $definition->expectedArguments(), count($arguments)));
+        }
+
+        return new FunctionNode($functionName, $arguments);
     }
 
     private function parseStringLiteral(): LiteralNode
@@ -296,10 +329,6 @@ class Tokenizer
     {
         $start = $this->position;
 
-        if ($this->peek() === '-') {
-            $this->position++;
-        }
-
         while (!$this->isAtEnd() && (is_numeric($this->peek()) || $this->peek() === '.')) {
             $this->position++;
         }
@@ -313,7 +342,7 @@ class Tokenizer
     {
         $start = $this->position;
 
-        while (!$this->isAtEnd() && (ctype_alnum($this->peek()) || $this->peek() === '_' || $this->peek() === '.' || $this->peek() === '*')) {
+        while (!$this->isAtEnd() && $this->isPathCharacter()) {
             $this->position++;
         }
 
@@ -344,16 +373,14 @@ class Tokenizer
         return new VariableNode($path);
     }
 
-    private function peekFunctionName(): ?string
+    /**
+     * A "*" is a wildcard only right after a dot, as in lines.*.quantity; elsewhere it multiplies, as in qty*price
+     */
+    private function isPathCharacter(): bool
     {
-        // Get registered function names from registry
-        $pattern = FormulaRegistry::$FORMULA_FUNCTION_PATTERN;
+        $char = $this->peek();
 
-        if (preg_match($pattern, $this->input, $matches, 0, $this->position)) {
-            return rtrim($matches[1], '(');
-        }
-
-        return null;
+        return ctype_alnum($char) || $char === '_' || $char === '.' || ($char === '*' && $this->input[$this->position - 1] === '.');
     }
 
     private const array THREE_CHAR_OPS = ['<=>' => true];

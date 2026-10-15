@@ -27,4 +27,21 @@ final readonly class FunctionDefinition
         public ?int $maxArguments,
         public ?int $itemArgument = null,
     ) {}
+
+    public function acceptsArgumentCount(int $count): bool
+    {
+        return $count >= $this->minArguments && ($this->maxArguments === null || $count <= $this->maxArguments);
+    }
+
+    /**
+     * How many arguments the function takes, for messages: "2", "at least 1" or "1 to 2"
+     */
+    public function expectedArguments(): string
+    {
+        return match (true) {
+            $this->maxArguments === $this->minArguments => (string) $this->minArguments,
+            $this->maxArguments === null => "at least {$this->minArguments}",
+            default => "{$this->minArguments} to {$this->maxArguments}",
+        };
+    }
 }

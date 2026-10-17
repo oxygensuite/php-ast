@@ -180,6 +180,41 @@ $evaluator->evaluate('unit_price * tax_rate', $data); // uses tax_rate from cont
 
 Context values take priority over data array values.
 
+### Wildcard Resolvers
+
+A context provider that also implements `WildcardResolver` decides which items a wildcard path reads, for example the
+current line of a loop over `lines`. It gets each wildcard path as the formula writes it, and whether a function reads
+it as its list (`SUM(lines.*.net_amount)`, `COUNT(lines.*.taxes)`), and returns the path to read instead, or `null` to
+read every item:
+
+```php
+use OxygenSuite\PhpAst\ContextProvider\ContextProvider;
+use OxygenSuite\PhpAst\ContextProvider\WildcardResolver;
+
+class CurrentLine implements ContextProvider, WildcardResolver
+{
+    public function __construct(private int $line) {}
+
+    public function getContextValue(string $key): mixed
+    {
+        return null;
+    }
+
+    public function resolveWildcardPath(string $path, bool $asList): ?string
+    {
+        // The current line's values, except where a function sums or counts all lines
+        return $asList ? null : preg_replace('/^lines\.\*/', "lines.{$this->line}", $path);
+    }
+}
+
+$evaluator = new FormulaEvaluator(new CurrentLine(2));
+$evaluator->evaluate('lines.*.net_amount / SUM(lines.*.net_amount)', $data); // line 2's share of the total
+```
+
+A function's `#[FunctionDefinition]` says which argument it reads as a list (`listArgument`), whether only when it is
+the only argument (`listArgumentAlone`, as for `SUM`, which otherwise adds up its arguments), and whether its result
+keeps the keys of that list (`keepsKeys`, as for `FILTER` and `MAP`).
+
 ## Custom Functions
 
 ### Simple Function

@@ -12,6 +12,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'GROUP(lines; "tax_category")',
     minArguments: 2,
     maxArguments: 2,
+    listArgument: 0,
 )]
 readonly class GroupFunction implements Formula
 {

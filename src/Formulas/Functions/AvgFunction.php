@@ -12,6 +12,8 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'AVG(lines.*.unit_price)',
     minArguments: 1,
     maxArguments: null,
+    listArgument: 0,
+    listArgumentAlone: true,
 )]
 readonly class AvgFunction implements Formula
 {

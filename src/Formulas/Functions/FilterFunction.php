@@ -16,6 +16,8 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     minArguments: 2,
     maxArguments: 2,
     itemArgument: 1,
+    listArgument: 0,
+    keepsKeys: true,
 )]
 readonly class FilterFunction implements ASTFormula
 {

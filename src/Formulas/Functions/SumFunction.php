@@ -16,6 +16,8 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'SUM(lines.*.net_amount)',
     minArguments: 1,
     maxArguments: null,
+    listArgument: 0,
+    listArgumentAlone: true,
 )]
 readonly class SumFunction implements Formula
 {

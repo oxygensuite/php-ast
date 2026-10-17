@@ -12,6 +12,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'COUNT(lines)',
     minArguments: 1,
     maxArguments: 1,
+    listArgument: 0,
 )]
 readonly class CountFunction implements Formula
 {

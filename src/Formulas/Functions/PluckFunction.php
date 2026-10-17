@@ -17,6 +17,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'PLUCK(lines; "quantity")',
     minArguments: 2,
     maxArguments: 2,
+    listArgument: 0,
 )]
 readonly class PluckFunction implements Formula
 {

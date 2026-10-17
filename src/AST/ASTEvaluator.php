@@ -4,6 +4,7 @@ namespace OxygenSuite\PhpAst\AST;
 
 use OxygenSuite\PhpAst\ContextProvider\ContextProvider;
 use OxygenSuite\PhpAst\ContextProvider\DataResolver;
+use OxygenSuite\PhpAst\ContextProvider\WildcardResolver;
 use OxygenSuite\PhpAst\Formulas\ASTFormula;
 use OxygenSuite\PhpAst\Formulas\FormulaRegistry;
 use OxygenSuite\PhpAst\Formulas\Functions\TruthyTrait;
@@ -12,7 +13,7 @@ use RuntimeException;
 /**
  * Evaluates AST nodes with given data context
  */
-class ASTEvaluator implements ASTVisitor
+class ASTEvaluator implements ASTVisitor, WildcardPathVisitor
 {
     use TruthyTrait;
 
@@ -25,12 +26,18 @@ class ASTEvaluator implements ASTVisitor
     private DataResolver $dataResolver;
     private Tokenizer $tokenizer;
     private ASTCache $cache;
+    private ?WildcardResolver $wildcardResolver;
+
+    /** The paths a WildcardResolver gave that still have wildcards, parsed, apart from the formulas */
+    private ASTCache $resolvedPaths;
 
     public function __construct(?ContextProvider $contextProvider = null)
     {
         $this->dataResolver = new DataResolver($contextProvider);
         $this->tokenizer = new Tokenizer();
         $this->cache = new ASTCache();
+        $this->wildcardResolver = $contextProvider instanceof WildcardResolver ? $contextProvider : null;
+        $this->resolvedPaths = new ASTCache(100);
     }
 
     /**
@@ -38,24 +45,16 @@ class ASTEvaluator implements ASTVisitor
      */
     public function evaluate(string $formula, array $data): mixed
     {
-        // A plain path, such as "lines.17.quantity" for one line of a loop, is read as the variable it parses to,
-        // without parsing it: each line's path is used once, and caching them would push out the reused formulas
+        // A plain path, such as "summary.total_net_amount", is read as the variable it parses to, without parsing it
         $path = trim($formula);
         if (preg_match('/^[A-Za-z_][A-Za-z0-9_.]*$/', $path)) {
             return $this->dataResolver->resolveVariable($path, $data);
         }
 
-        // Get or create AST
-        $ast = $this->cache->get($formula);
-        if ($ast === null) {
-            $ast = $this->tokenizer->tokenize($formula);
-            $this->cache->set($formula, $ast);
-        }
-
         // Evaluate AST with data context
         $this->currentDepth = 0;
 
-        return $ast->accept($this, $data);
+        return $this->parse($this->cache, $formula)->accept($this, $data);
     }
 
     public function visitLiteral(LiteralNode $node, array $context): mixed
@@ -66,6 +65,40 @@ class ASTEvaluator implements ASTVisitor
     public function visitVariable(VariableNode $node, array $context): mixed
     {
         return $this->dataResolver->resolveVariable($node->path, $context);
+    }
+
+    /**
+     * Every item the path reaches, or the items of the path the WildcardResolver gives instead
+     */
+    public function visitWildcardPath(WildcardPathNode $node, array $context): mixed
+    {
+        $path = $node->ofItem ? null : $this->wildcardResolver?->resolveWildcardPath($node->path, $node->asList);
+
+        if ($path === null || $path === $node->path) {
+            return $node->expansion->accept($this, $context);
+        }
+
+        if (! str_contains($path, '*')) {
+            return $this->dataResolver->resolveVariable($path, $context);
+        }
+
+        $resolved = $this->parse($this->resolvedPaths, $path);
+
+        return ($resolved instanceof WildcardPathNode ? $resolved->expansion : $resolved)->accept($this, $context);
+    }
+
+    /**
+     * The formula's AST, parsed once and kept in the cache
+     */
+    private function parse(ASTCache $cache, string $formula): ASTNode
+    {
+        $ast = $cache->get($formula);
+        if ($ast === null) {
+            $ast = $this->tokenizer->tokenize($formula);
+            $cache->set($formula, $ast);
+        }
+
+        return $ast;
     }
 
     public function visitFunction(FunctionNode $node, array $context): mixed
@@ -205,5 +238,6 @@ class ASTEvaluator implements ASTVisitor
     public function clearCache(): void
     {
         $this->cache->clear();
+        $this->resolvedPaths->clear();
     }
 }

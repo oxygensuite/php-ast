@@ -12,6 +12,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'JOIN(lines.*.item_code; ", ")',
     minArguments: 2,
     maxArguments: 2,
+    listArgument: 0,
 )]
 readonly class JoinFunction implements Formula
 {

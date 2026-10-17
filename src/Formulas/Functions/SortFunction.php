@@ -12,6 +12,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'SORT(lines.*.item_code)',
     minArguments: 1,
     maxArguments: 1,
+    listArgument: 0,
 )]
 readonly class SortFunction implements Formula
 {

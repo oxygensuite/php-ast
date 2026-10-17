@@ -12,6 +12,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'LAST(lines.*.line_number)',
     minArguments: 1,
     maxArguments: 1,
+    listArgument: 0,
 )]
 readonly class LastFunction implements Formula
 {

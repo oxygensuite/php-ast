@@ -12,6 +12,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'FLAT(lines.*.taxes)',
     minArguments: 1,
     maxArguments: 2,
+    listArgument: 0,
 )]
 readonly class FlatFunction implements Formula
 {

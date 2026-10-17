@@ -91,6 +91,14 @@ class FormulaRegistry
     }
 
     /**
+     * The definition of a function's handler, as getHandler() and getHandlerByName() return it
+     */
+    public static function definitionOf(Formula|ASTFormula $handler): FunctionDefinition
+    {
+        return self::definitions()[array_search($handler, self::$registry->handlers, true)];
+    }
+
+    /**
      * @return array<string, FunctionDefinition>
      */
     private function readDefinitions(): array

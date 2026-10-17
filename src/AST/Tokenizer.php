@@ -13,6 +13,9 @@ class Tokenizer
     private const int MAX_FORMULA_LENGTH = 10_000;
 
     private int $position = 0;
+
+    /** How many arguments evaluated per item, such as FILTER's condition, the current position is inside */
+    private int $itemArguments = 0;
     private string $input = '';
     private int $length = 0;
 
@@ -27,6 +30,7 @@ class Tokenizer
         $this->input = trim($formula);
         $this->length = strlen($this->input);
         $this->position = 0;
+        $this->itemArguments = 0;
 
         $node = $this->parseExpression();
 
@@ -277,7 +281,10 @@ class Tokenizer
                     throw new ParseException("Missing argument of {$functionName}() at position {$this->position}");
                 }
 
+                $ofItem = count($arguments) === $definition->itemArgument;
+                $this->itemArguments += (int) $ofItem;
                 $arguments[] = $this->parseExpression();
+                $this->itemArguments -= (int) $ofItem;
                 $this->skipWhitespace();
 
                 if ($this->peek() === ')') {
@@ -297,6 +304,13 @@ class Tokenizer
         // Checked here, where every call is built, so a call is rejected even where the data never reaches it
         if (!$definition->acceptsArgumentCount(count($arguments))) {
             throw new ParseException(sprintf('%s() expects %s argument(s), %d given', $functionName, $definition->expectedArguments(), count($arguments)));
+        }
+
+        // A wildcard path the function reads as its list, as SUM(lines.*.net_amount) does, is marked for its resolver
+        foreach ($arguments as $index => $argument) {
+            if ($argument instanceof WildcardPathNode && $definition->readsAsList($index, count($arguments))) {
+                $arguments[$index] = $argument->readAsList();
+            }
         }
 
         return new FunctionNode($functionName, $arguments);
@@ -366,7 +380,7 @@ class Tokenizer
             $this->position = $savedPosition;
             $this->length = $savedLength;
 
-            return $node;
+            return new WildcardPathNode($path, $node, ofItem: $this->itemArguments > 0);
         }
 
         return new VariableNode($path);

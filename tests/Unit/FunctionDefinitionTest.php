@@ -43,6 +43,34 @@ class FunctionDefinitionTest extends FormulaTestCase
         if ($definition->itemArgument !== null) {
             $this->assertLessThan($definition->maxArguments ?? PHP_INT_MAX, $definition->itemArgument);
         }
+
+        if ($definition->listArgument !== null) {
+            $this->assertLessThan($definition->maxArguments ?? PHP_INT_MAX, $definition->listArgument);
+        } else {
+            $this->assertFalse($definition->listArgumentAlone, 'Only a function with a list argument reads it alone.');
+            $this->assertFalse($definition->keepsKeys, 'Only a function with a list argument keeps its keys.');
+        }
+    }
+
+    #[DataProvider('definitions')]
+    public function test_the_definition_of_a_handler_is_its_function_s(string $name, FunctionDefinition $definition)
+    {
+        $this->assertSame($definition, FormulaRegistry::definitionOf(FormulaRegistry::getHandlerByName($name)));
+    }
+
+    public function test_the_functions_that_keep_keys_return_their_list_keyed_as_given()
+    {
+        $data = ['items' => [3 => ['quantity' => 1], 7 => ['quantity' => 2]]];
+        $formulas = ['FILTER' => 'FILTER(items; quantity > 0)', 'MAP' => 'MAP(items; quantity)'];
+
+        $this->assertEqualsCanonicalizing(
+            array_keys($formulas),
+            array_keys(array_filter(FormulaRegistry::definitions(), fn(FunctionDefinition $definition) => $definition->keepsKeys)),
+        );
+
+        foreach ($formulas as $formula) {
+            $this->assertSame([3, 7], array_keys($this->evaluate($formula, $data)));
+        }
     }
 
     #[DataProvider('definitions')]

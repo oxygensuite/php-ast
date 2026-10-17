@@ -12,6 +12,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     example: 'FIRST(lines.*.item_description)',
     minArguments: 1,
     maxArguments: 1,
+    listArgument: 0,
 )]
 readonly class FirstFunction implements Formula
 {

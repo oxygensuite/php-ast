@@ -4,7 +4,6 @@ namespace OxygenSuite\PhpAst\AST;
 
 use OxygenSuite\PhpAst\ContextProvider\WildcardTransformer;
 use OxygenSuite\PhpAst\Formulas\FormulaRegistry;
-use RuntimeException;
 
 /**
  * Tokenizes formula strings into AST
@@ -20,7 +19,7 @@ class Tokenizer
     public function tokenize(string $formula): ASTNode
     {
         if (strlen($formula) > self::MAX_FORMULA_LENGTH) {
-            throw new RuntimeException('Formula exceeds maximum allowed length');
+            throw new ParseException('Formula exceeds maximum allowed length');
         }
 
         FormulaRegistry::ensureInitialized();
@@ -34,7 +33,7 @@ class Tokenizer
         // Whatever the expression could not read is a mistake, not something to drop
         $this->skipWhitespace();
         if (!$this->isAtEnd()) {
-            throw new RuntimeException("Unexpected character '{$this->peek()}' at position {$this->position}");
+            throw $this->unexpected();
         }
 
         return $node;
@@ -245,13 +244,13 @@ class Tokenizer
             return $node;
         }
 
-        throw new RuntimeException("Unexpected character '{$this->peek()}' at position {$this->position}");
+        throw $this->unexpected();
     }
 
     /**
      * A call starts with a word directly followed by "(". Names are case-sensitive: only upper-case registered ones exist.
      *
-     * @throws RuntimeException When the word is not a function, or the call is malformed or has the wrong argument count
+     * @throws ParseException When the word is not a function, or the call is malformed or has the wrong argument count
      */
     private function tryParseFunction(): ?FunctionNode
     {
@@ -261,7 +260,7 @@ class Tokenizer
 
         $functionName = $matches[1];
         $definition = FormulaRegistry::definitions()[$functionName]
-            ?? throw new RuntimeException("Unknown function '$functionName' at position {$this->position}");
+            ?? throw new ParseException("Unknown function '$functionName' at position {$this->position}");
 
         // Consume function name and opening parenthesis
         $this->position += strlen($functionName) + 1;
@@ -275,7 +274,7 @@ class Tokenizer
                 $this->skipWhitespace();
 
                 if ($this->peek() === ';' || $this->peek() === ')') {
-                    throw new RuntimeException("Missing argument of {$functionName}() at position {$this->position}");
+                    throw new ParseException("Missing argument of {$functionName}() at position {$this->position}");
                 }
 
                 $arguments[] = $this->parseExpression();
@@ -286,7 +285,7 @@ class Tokenizer
                 }
 
                 if ($this->peek() !== ';') {
-                    throw new RuntimeException("Expected ';' or ')' at position $this->position");
+                    throw $this->unexpected("';' or ')'");
                 }
 
                 $this->consume(';');
@@ -297,7 +296,7 @@ class Tokenizer
 
         // Checked here, where every call is built, so a call is rejected even where the data never reaches it
         if (!$definition->acceptsArgumentCount(count($arguments))) {
-            throw new RuntimeException(sprintf('%s() expects %s argument(s), %d given', $functionName, $definition->expectedArguments(), count($arguments)));
+            throw new ParseException(sprintf('%s() expects %s argument(s), %d given', $functionName, $definition->expectedArguments(), count($arguments)));
         }
 
         return new FunctionNode($functionName, $arguments);
@@ -419,9 +418,22 @@ class Tokenizer
     {
         $length = strlen($operator);
         if (substr($this->input, $this->position, $length) !== $operator) {
-            throw new RuntimeException("Expected operator '$operator' at position {$this->position}");
+            throw new ParseException("Expected operator '$operator' at position {$this->position}");
         }
         $this->position += $length;
+    }
+
+    /**
+     * The error for what stands at the current position, a character or the formula's end, where the grammar expected
+     * something else, such as "')'"
+     */
+    private function unexpected(?string $expected = null): ParseException
+    {
+        $found = $this->isAtEnd() ? 'end of the formula' : "character '{$this->peek()}'";
+
+        return new ParseException($expected === null
+            ? "Unexpected {$found} at position {$this->position}"
+            : "Expected {$expected} but found {$found} at position {$this->position}");
     }
 
     private function peek(): string
@@ -445,7 +457,7 @@ class Tokenizer
     private function consume(string $expected): void
     {
         if ($this->peek() !== $expected) {
-            throw new RuntimeException("Expected '$expected' but got '{$this->peek()}' at position {$this->position}");
+            throw $this->unexpected("'{$expected}'");
         }
         $this->position++;
     }

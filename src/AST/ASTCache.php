@@ -24,7 +24,12 @@ class ASTCache
         if (isset($this->cache[$formula])) {
             $this->hits++;
 
-            return $this->cache[$formula];
+            // Moved to the end, so the oldest entry set() removes is the least recently used, not a reused formula
+            $node = $this->cache[$formula];
+            unset($this->cache[$formula]);
+            $this->cache[$formula] = $node;
+
+            return $node;
         }
 
         $this->misses++;

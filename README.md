@@ -79,13 +79,18 @@ Listed from highest to lowest precedence:
 |------------|-----------------------------------|----------------------------------|
 | 1          | `**`                              | Exponentiation                   |
 | 2          | `*` `/` `%`                       | Multiplication, division, modulo |
-| 3          | `+` `-`                           | Addition, subtraction            |
+| 3          | `+` `-`                           | Addition, subtraction; `+` joins text |
 | 4          | `==` `!=` `<` `>` `<=` `>=` `<=>` | Comparison                       |
 | 5          | `&&`                              | Logical AND                      |
 | 6          | `\|\|`                            | Logical OR                       |
 | 7          | `??` `?:`                         | Null coalescing, elvis           |
 
 Parentheses override precedence: `(a + b) * c`.
+
+Variables keep their values' types, so text compares and combines as text: `customer.name == "ACME"`,
+`street || city`. `+` adds numbers, including a number written as text when the other side is a number (`"1" + 5` is
+`6`), and joins text otherwise, so codes keep their digits (`"001" + "12"` is `"00112"`). `&&`, `||`
+and `?:` read a value as true or false the way `IF()` does: text is false only when it is `""`, `"0"` or `"false"`.
 
 ## Functions
 
@@ -120,6 +125,7 @@ All functions use **semicolons** (`;`) as argument separators.
 | `GROUP(array; "key")`      | Group items by key                       | `GROUP(lines; "tax_category")`      |
 | `SORT(array)`              | Sort array                               | `SORT(lines.*.quantity)`            |
 | `JOIN(array; separator)`   | Join into string                         | `JOIN(lines.*.quantity; ",")`       |
+| `CONCAT(value; …)`         | Join values as text, lists item by item  | `CONCAT(series; "-"; number)`       |
 | `FIRST(array)`             | First element                            | `FIRST(lines)`                      |
 | `LAST(array)`              | Last element                             | `LAST(lines)`                       |
 
@@ -231,8 +237,9 @@ $evaluator->clearCache();
 |----------------------|---------------------------|
 | Missing variable     | Returns `null`            |
 | Division by zero     | Returns `0`               |
-| Unknown function     | Throws `RuntimeException` |
-| Invalid expression   | Throws `RuntimeException` |
+| Unknown function     | Throws `ParseException`   |
+| Invalid expression   | Throws `ParseException`   |
+| Arithmetic on text   | Throws `RuntimeException` |
 | Recursion depth > 32 | Throws `RuntimeException` |
 
 ## License

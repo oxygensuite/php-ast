@@ -11,11 +11,11 @@ use ReflectionClass;
  */
 class FormulaRegistry
 {
-    public static string $FORMULA_PATTERN = '';
-    public static string $FORMULA_FUNCTION_PATTERN = '';
-
     /** @var array<string, Formula|ASTFormula> */
     private array $handlers = [];
+
+    /** Matches a formula that starts with a call of a registered function, its name escaped against regex injection */
+    private string $callPattern;
 
     /** @var array<string, FunctionDefinition>|null */
     private ?array $definitions = null;
@@ -25,7 +25,7 @@ class FormulaRegistry
     private function __construct()
     {
         $this->registerFunctions();
-        $this->updatePatterns();
+        $this->callPattern = '/^(' . implode('|', array_map(fn(string $name) => preg_quote($name, '/'), array_keys($this->handlers))) . ')\(/';
     }
 
     /**
@@ -46,11 +46,7 @@ class FormulaRegistry
         self::ensureInitialized();
 
         // First, check if it starts with a function name followed by (
-        $escapedNames = array_map(
-            fn(string $name) => preg_quote($name, '/'),
-            array_keys(self::$registry->handlers),
-        );
-        if (! preg_match('/^(' . implode('|', $escapedNames) . ')\(/', $formula, $matches)) {
+        if (! preg_match(self::$registry->callPattern, $formula, $matches)) {
             return [null, null];
         }
 
@@ -171,19 +167,5 @@ class FormulaRegistry
         }
 
         $this->handlers[$upperName] = $handler;
-    }
-
-    private function updatePatterns(): void
-    {
-        // Update regex patterns with registered function names
-        // Escape function names to prevent ReDoS via regex metacharacters
-        $escapedNames = array_map(
-            fn(string $name) => preg_quote($name, '/'),
-            array_keys($this->handlers),
-        );
-        $functionNames = implode('|', $escapedNames);
-
-        self::$FORMULA_PATTERN = '/^(' . $functionNames . ')\((.*)\)$/s';
-        self::$FORMULA_FUNCTION_PATTERN = '/(' . $functionNames . ')\(/';
     }
 }

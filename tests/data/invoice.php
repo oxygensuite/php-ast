@@ -72,6 +72,8 @@ return [
     ],
     'header' => [
         'currency' => 'EUR',
+        'series' => 'ΑΠΥ',
+        'invoice_number' => '0042',
     ],
     'supplier' => [
         'name' => 'Oxygen',

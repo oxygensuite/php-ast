@@ -6,6 +6,7 @@ use OxygenSuite\PhpAst\ContextProvider\ContextProvider;
 use OxygenSuite\PhpAst\ContextProvider\DataResolver;
 use OxygenSuite\PhpAst\Formulas\ASTFormula;
 use OxygenSuite\PhpAst\Formulas\FormulaRegistry;
+use OxygenSuite\PhpAst\Formulas\Functions\TruthyTrait;
 use RuntimeException;
 
 /**
@@ -13,7 +14,12 @@ use RuntimeException;
  */
 class ASTEvaluator implements ASTVisitor
 {
+    use TruthyTrait;
+
     private const int MAX_RECURSION_DEPTH = 32;
+
+    /** The operators that read their operands as numbers, see toNumber() */
+    private const array ARITHMETIC_OPERATORS = ['+' => true, '-' => true, '*' => true, '/' => true, '%' => true, '**' => true];
     private int $currentDepth = 0;
 
     private DataResolver $dataResolver;
@@ -32,6 +38,13 @@ class ASTEvaluator implements ASTVisitor
      */
     public function evaluate(string $formula, array $data): mixed
     {
+        // A plain path, such as "lines.17.quantity" for one line of a loop, is read as the variable it parses to,
+        // without parsing it: each line's path is used once, and caching them would push out the reused formulas
+        $path = trim($formula);
+        if (preg_match('/^[A-Za-z_][A-Za-z0-9_.]*$/', $path)) {
+            return $this->dataResolver->resolveVariable($path, $data);
+        }
+
         // Get or create AST
         $ast = $this->cache->get($formula);
         if ($ast === null) {
@@ -110,12 +123,15 @@ class ASTEvaluator implements ASTVisitor
 
     private function evaluateBinaryOperation(string $operator, mixed $left, mixed $right): mixed
     {
-        // Handle string concatenation
-        if ($operator === '+' && (is_string($left) || is_string($right))) {
+        if ($operator === '+' && ! $this->adds($left, $right)) {
             return $left . $right;
         }
 
-        // Comparison operators
+        if (isset(self::ARITHMETIC_OPERATORS[$operator])) {
+            $left = $this->toNumber($left, $operator);
+            $right = $this->toNumber($right, $operator);
+        }
+
         return match ($operator) {
             '+' => $left + $right,
             '-' => $left - $right,
@@ -127,15 +143,51 @@ class ASTEvaluator implements ASTVisitor
             '<=' => $left <= $right,
             '==', '=' => $left == $right,
             '!=' => $left != $right,
-            '&&' => $left && $right,
-            '||' => $left || $right,
+            '&&' => $this->isTruthy($left) && $this->isTruthy($right),
+            '||' => $this->isTruthy($left) || $this->isTruthy($right),
             '%' => $right !== 0 && $right !== 0.0 ? ($left % $right) : 0,
             '**' => abs($right) > 1000 ? throw new RuntimeException('Exponent exceeds maximum allowed value') : pow($left, $right),
             '<=>' => $left <=> $right,
             '??' => $left ?? $right,
-            '?:' => $left ?: $right,
-            '!' => !($left ?? false) ? $right : $left,
+            '?:' => $this->isTruthy($left) ? $left : $right,
             default => throw new RuntimeException("Unknown operator: $operator"),
+        };
+    }
+
+    /**
+     * Whether "+" adds rather than joins: it joins text, so codes such as "001" + "12" keep their digits, and adds
+     * when a number meets a number or a number written as text, such as uid "1" + 5.
+     */
+    private function adds(mixed $left, mixed $right): bool
+    {
+        if (is_string($left) && is_string($right)) {
+            return false;
+        }
+
+        if (is_string($left)) {
+            return is_numeric($left) && (is_int($right) || is_float($right));
+        }
+
+        if (is_string($right)) {
+            return is_numeric($right) && (is_int($left) || is_float($left));
+        }
+
+        return true;
+    }
+
+    /**
+     * A number written as text, such as "0" or "12.5", as that number, and nothing as 0, so the zero checks of "/"
+     * and "%" see them; any other value as it is.
+     *
+     * @throws RuntimeException When the value is text that is not a number, such as "ΟΔΟΣ ΕΡΜΟΥ" or "24%"
+     */
+    private function toNumber(mixed $value, string $operator): mixed
+    {
+        return match (true) {
+            is_string($value) && is_numeric($value) => $value + 0,
+            is_string($value) => throw new RuntimeException("'{$operator}' needs numbers, got the text '{$value}'"),
+            $value === null, is_bool($value) => (int) $value,
+            default => $value,
         };
     }
 

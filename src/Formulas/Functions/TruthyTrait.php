@@ -19,7 +19,7 @@ trait TruthyTrait
         }
 
         if (is_string($value)) {
-            return $value !== '' && strtolower($value) !== 'false' && $value !== '0';
+            return $value !== '' && $value !== '0' && strcasecmp($value, 'false') !== 0;
         }
 
         if (is_array($value)) {

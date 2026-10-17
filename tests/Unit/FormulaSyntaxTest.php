@@ -3,9 +3,9 @@
 namespace Tests\Unit;
 
 use OxygenSuite\PhpAst\AST\FunctionNode;
+use OxygenSuite\PhpAst\AST\ParseException;
 use OxygenSuite\PhpAst\AST\Tokenizer;
 use PHPUnit\Framework\Attributes\DataProvider;
-use RuntimeException;
 use Tests\FormulaTestCase;
 
 class FormulaSyntaxTest extends FormulaTestCase
@@ -15,7 +15,7 @@ class FormulaSyntaxTest extends FormulaTestCase
         return [
             'unknown function before a known one' => ['XYZ(MAX(7; 9))', "Unknown function 'XYZ' at position 0"],
             'lower-case function name' => ['SUM(round(1))', "Unknown function 'round' at position 4"],
-            'space before the parenthesis' => ['SUM(ROUND (1))', "Expected ';' or ')' at position 10"],
+            'space before the parenthesis' => ['SUM(ROUND (1))', "Expected ';' or ')' but found character '(' at position 10"],
             'text after the expression' => ['SUM(1; 2); 999', "Unexpected character ';' at position 9"],
             'empty argument' => ['IF(1;; 0)', 'Missing argument of IF() at position 5'],
             'empty first argument' => ['ROUND(; 2)', 'Missing argument of ROUND() at position 6'],
@@ -27,10 +27,37 @@ class FormulaSyntaxTest extends FormulaTestCase
     #[DataProvider('malformedFormulas')]
     public function test_malformed_formula_is_rejected(string $formula, string $message)
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(ParseException::class);
         $this->expectExceptionMessage($message);
 
         (new Tokenizer())->tokenize($formula);
+    }
+
+    public static function malformedExpressions(): array
+    {
+        return [
+            'an operator without its right side' => ['uid +', 'Unexpected end of the formula at position 5'],
+            'text after a comparison' => ['uid == 1 2', "Unexpected character '2' at position 9"],
+            'an unclosed call' => ['IF(uid', "Expected ';' or ')' but found end of the formula at position 6"],
+            'an unclosed parenthesis' => ['(uid + 1', "Expected ')' but found end of the formula at position 8"],
+        ];
+    }
+
+    #[DataProvider('malformedExpressions')]
+    public function test_malformed_expression_is_rejected_instead_of_read_as_zero(string $formula, string $message)
+    {
+        $this->expectException(ParseException::class);
+        $this->expectExceptionMessage($message);
+
+        $this->evaluate($formula);
+    }
+
+    public function test_formula_longer_than_the_limit_is_rejected()
+    {
+        $this->expectException(ParseException::class);
+        $this->expectExceptionMessage('Formula exceeds maximum allowed length');
+
+        $this->evaluate(str_repeat('1 + ', 2500) . '1');
     }
 
     public function test_function_is_read_only_at_its_own_position()
@@ -56,7 +83,7 @@ class FormulaSyntaxTest extends FormulaTestCase
     #[DataProvider('wrongArgumentCounts')]
     public function test_call_with_wrong_argument_count_is_rejected(string $formula, string $message)
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(ParseException::class);
         $this->expectExceptionMessage($message);
 
         $this->evaluate($formula);
@@ -64,7 +91,7 @@ class FormulaSyntaxTest extends FormulaTestCase
 
     public function test_wrong_argument_count_is_rejected_where_the_data_never_reaches_the_call()
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(ParseException::class);
         $this->expectExceptionMessage('ROUND() expects 1 to 2 argument(s), 4 given');
 
         $this->evaluate('MAP(lines; ROUND(quantity; 1; 2; 3))', ['lines' => []]);

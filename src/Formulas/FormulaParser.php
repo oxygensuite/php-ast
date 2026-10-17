@@ -8,39 +8,6 @@ namespace OxygenSuite\PhpAst\Formulas;
 class FormulaParser
 {
     /**
-     * Extract the next complete formula from text
-     */
-    public static function extractNextFormula(string $text): ?string
-    {
-        FormulaRegistry::ensureInitialized();
-
-        if (! preg_match(FormulaRegistry::$FORMULA_FUNCTION_PATTERN, $text, $matches, PREG_OFFSET_CAPTURE)) {
-            return null;
-        }
-
-        $start = $matches[0][1];
-        $depth = 0;
-        $inFormula = false;
-        $length = strlen($text);
-
-        for ($i = $start; $i < $length; $i++) {
-            $char = $text[$i];
-
-            if ($char === '(') {
-                $depth++;
-                $inFormula = true;
-            } elseif ($char === ')') {
-                $depth--;
-                if ($depth === 0 && $inFormula) {
-                    return substr($text, $start, $i - $start + 1);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Remove quotes from string literal
      */
     public static function unquoteString(string $value): string
@@ -93,29 +60,4 @@ class FormulaParser
         return $parts;
     }
 
-    /**
-     * Replace all nested formulas in an expression
-     */
-    public static function replaceNestedFormulas(string $expression, array $data, FormulaEvaluator $evaluator): string
-    {
-        // Ensure the registry is initialized before accessing patterns
-        FormulaRegistry::ensureInitialized();
-
-        $maxIterations = 10;
-        $iteration = 0;
-
-        while ($iteration < $maxIterations) {
-            $formula = self::extractNextFormula($expression);
-            if ($formula === null) {
-                break;
-            }
-
-            $formulaResult = $evaluator->evaluate($formula, $data);
-            // Cast result to string for str_replace (PHP 8.4+ strictness)
-            $expression = str_replace($formula, (string) $formulaResult, $expression);
-            $iteration++;
-        }
-
-        return $expression;
-    }
 }

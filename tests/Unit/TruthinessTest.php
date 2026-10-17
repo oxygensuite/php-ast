@@ -33,6 +33,13 @@ class TruthinessTest extends FormulaTestCase
         $this->assertSame($isTruthy ? 'yes' : 'no', $result);
     }
 
+    #[DataProvider('values')]
+    public function test_and_and_or_read_a_value_as_if_does(mixed $value, bool $isTruthy)
+    {
+        $this->assertSame($isTruthy, $this->evaluate('code && "x"', ['code' => $value]));
+        $this->assertSame($isTruthy, $this->evaluate('code || ""', ['code' => $value]));
+    }
+
     public function test_filter_keeps_the_items_whose_field_reads_as_true()
     {
         $result = $this->evaluate('FILTER(items; code)', [

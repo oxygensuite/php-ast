@@ -116,18 +116,19 @@ All functions use **semicolons** (`;`) as argument separators.
 
 ### Array Manipulation
 
-| Function                   | Description                              | Example                             |
-|----------------------------|------------------------------------------|-------------------------------------|
-| `PLUCK(array; "key")`      | Extract column from array of objects     | `PLUCK(lines; "quantity")`          |
-| `FLAT(array; depth)`       | Flatten nested arrays (default depth: 1) | `FLAT([[1,2],[3,[4,5]]]; 2)`        |
-| `MAP(array; expr)`         | Apply expression per item                | `MAP(lines; quantity * unit_price)` |
-| `FILTER(array; condition)` | Filter items by condition                | `FILTER(lines; unit_price > 10)`    |
-| `GROUP(array; "key")`      | Group items by key                       | `GROUP(lines; "tax_category")`      |
-| `SORT(array)`              | Sort array                               | `SORT(lines.*.quantity)`            |
-| `JOIN(array; separator)`   | Join into string                         | `JOIN(lines.*.quantity; ",")`       |
-| `CONCAT(value; …)`         | Join values as text, lists item by item  | `CONCAT(series; "-"; number)`       |
-| `FIRST(array)`             | First element                            | `FIRST(lines)`                      |
-| `LAST(array)`              | Last element                             | `LAST(lines)`                       |
+| Function                        | Description                                | Example                             |
+|---------------------------------|--------------------------------------------|-------------------------------------|
+| `PLUCK(array; "key")`           | Extract column from array of objects       | `PLUCK(lines; "quantity")`          |
+| `FLAT(array; depth)`            | Flatten nested arrays (default depth: 1)   | `FLAT([[1,2],[3,[4,5]]]; 2)`        |
+| `MAP(array; expr)`              | Apply expression per item                  | `MAP(lines; quantity * unit_price)` |
+| `FILTER(array; condition)`      | Filter items by condition                  | `FILTER(lines; unit_price > 10)`    |
+| `GROUP(array; "key")`           | Group items by key                         | `GROUP(lines; "tax_category")`      |
+| `SORT(array)`                   | Sort array                                 | `SORT(lines.*.quantity)`            |
+| `JOIN(array; separator)`        | Join into string                           | `JOIN(lines.*.quantity; ",")`       |
+| `CONCAT(value; …)`              | Join values as text, lists item by item    | `CONCAT(series; "-"; number)`       |
+| `TEXTJOIN(separator; value; …)` | Join the non-blank values with a separator | `TEXTJOIN(" "; street; number)`     |
+| `FIRST(array)`                  | First element                              | `FIRST(lines)`                      |
+| `LAST(array)`                   | Last element                               | `LAST(lines)`                       |
 
 ### Conditional
 

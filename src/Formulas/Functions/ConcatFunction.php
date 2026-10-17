@@ -16,23 +16,13 @@ use RuntimeException;
 )]
 readonly class ConcatFunction implements Formula
 {
+    use TextValuesTrait;
+
     /**
      * @throws RuntimeException When an argument holds a list or a record, which has no text of its own
      */
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): string
     {
-        $text = '';
-
-        foreach ($arguments as $index => $argument) {
-            foreach (is_array($argument) ? $argument : [$argument] as $value) {
-                if (is_array($value) || is_object($value)) {
-                    throw new RuntimeException(sprintf('CONCAT() joins text and numbers; argument %d holds a list or a record', $index + 1));
-                }
-
-                $text .= (string) $value;
-            }
-        }
-
-        return $text;
+        return implode('', $this->textValues($arguments, 'CONCAT'));
     }
 }

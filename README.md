@@ -98,13 +98,13 @@ All functions use **semicolons** (`;`) as argument separators.
 
 ### Aggregation
 
-| Function        | Description           | Example                   |
-|-----------------|-----------------------|---------------------------|
-| `SUM(values)`   | Sum of numeric values | `SUM(lines.*.quantity)`   |
-| `AVG(values)`   | Average               | `AVG(lines.*.unit_price)` |
-| `MIN(values)`   | Minimum value         | `MIN(lines.*.unit_price)` |
-| `MAX(values)`   | Maximum value         | `MAX(lines.*.quantity)`   |
-| `COUNT(values)` | Number of elements    | `COUNT(lines.*.quantity)` |
+| Function        | Description                                                   | Example                   |
+|-----------------|---------------------------------------------------------------|---------------------------|
+| `SUM(values)`   | Sum of numeric values                                         | `SUM(lines.*.quantity)`   |
+| `AVG(values)`   | Average                                                       | `AVG(lines.*.unit_price)` |
+| `MIN(values)`   | Minimum value                                                 | `MIN(lines.*.unit_price)` |
+| `MAX(values)`   | Maximum value                                                 | `MAX(lines.*.quantity)`   |
+| `COUNT(values)` | Number of elements, 1 for a single value, 0 for a missing one | `COUNT(lines.*.quantity)` |
 
 ### Rounding
 
@@ -129,13 +129,16 @@ All functions use **semicolons** (`;`) as argument separators.
 | `TEXTJOIN(separator; value; …)` | Join the non-blank values with a separator | `TEXTJOIN(" "; street; number)`     |
 | `FIRST(array)`                  | First element                              | `FIRST(lines)`                      |
 | `LAST(array)`                   | Last element                               | `LAST(lines)`                       |
+| `LEN(text)`                     | Number of characters                       | `LEN(header.invoice_number)`        |
 
 ### Conditional
 
-| Function                        | Description      | Example                               |
-|---------------------------------|------------------|---------------------------------------|
-| `IF(cond; true_val; false_val)` | Conditional      | `IF(quantity > 10; "bulk"; "single")` |
-| `VALUE(array; "key")`           | Get value by key | `VALUE(line; "quantity")`             |
+| Function                        | Description                       | Example                               |
+|---------------------------------|-----------------------------------|---------------------------------------|
+| `IF(cond; true_val; false_val)` | Conditional                       | `IF(quantity > 10; "bulk"; "single")` |
+| `VALUE(array; "key")`           | Get value by key                  | `VALUE(line; "quantity")`             |
+| `EMPTY(value)`                  | Missing, blank or an empty list   | `EMPTY(customer.name)`                |
+| `EXISTS(value)`                 | Not empty: zero counts as a value | `EXISTS(header.series)`               |
 
 ## Composing Functions
 

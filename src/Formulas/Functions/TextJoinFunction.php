@@ -16,6 +16,7 @@ use RuntimeException;
 )]
 readonly class TextJoinFunction implements Formula
 {
+    use BlankTrait;
     use TextValuesTrait;
 
     /**
@@ -24,7 +25,7 @@ readonly class TextJoinFunction implements Formula
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): string
     {
         $separator = array_shift($arguments);
-        $texts = array_filter($this->textValues($arguments, 'TEXTJOIN', firstPosition: 2), fn(string $text) => trim($text) !== '');
+        $texts = array_filter($this->textValues($arguments, 'TEXTJOIN', firstPosition: 2), fn(string $text) => ! $this->isBlank($text));
 
         return implode($this->text($separator, 'TEXTJOIN', 1), $texts);
     }

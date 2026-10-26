@@ -16,5 +16,5 @@ interface Formula
      * @param array $data Data context
      * @param ASTEvaluator $evaluator Evaluator for nested evaluations if needed
      */
-    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float|int|string|array|null;
+    public function execute(array $arguments, array $data, ASTEvaluator $evaluator): float|int|string|bool|array|null;
 }

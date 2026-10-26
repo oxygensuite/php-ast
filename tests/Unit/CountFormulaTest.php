@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\FormulaTestCase;
 
 class CountFormulaTest extends FormulaTestCase
@@ -28,5 +29,22 @@ class CountFormulaTest extends FormulaTestCase
 
         // All 5 lines have results
         $this->assertEquals(5, $result);
+    }
+
+    public static function valuesThatAreNotLists(): array
+    {
+        return [
+            'a missing value' => ['COUNT(missing_field)', 0],
+            'an empty string' => ['COUNT("")', 0],
+            'blank text, as EXISTS() reads it' => ['COUNT(" ")', 0],
+            'zero' => ['COUNT(0)', 1],
+            'a text' => ['COUNT("A")', 1],
+        ];
+    }
+
+    #[DataProvider('valuesThatAreNotLists')]
+    public function test_count_of_a_value_that_is_not_a_list(string $formula, int $expected)
+    {
+        $this->assertSame($expected, $this->evaluate($formula));
     }
 }

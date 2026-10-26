@@ -8,7 +8,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 
 #[FunctionDefinition(
     signature: 'COUNT(values)',
-    description: 'Number of items in an array; any other value counts as 1, a missing one included, and only an empty string as 0.',
+    description: 'Number of items in an array, or 1 for a single value; a missing value or blank text counts as 0. EXISTS() tells whether a value is there, LEN() the length of a text.',
     example: 'COUNT(lines)',
     minArguments: 1,
     maxArguments: 1,
@@ -16,18 +16,16 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
 )]
 readonly class CountFunction implements Formula
 {
+    use BlankTrait;
+
     public function execute(array $arguments, array $data, ASTEvaluator $evaluator): int
     {
-        if (empty($arguments)) {
-            return 0;
-        }
-
-        $result = $arguments[0];
+        $result = $arguments[0] ?? null;
 
         if (is_array($result)) {
             return count($result);
         }
 
-        return is_numeric($result) || $result !== '' ? 1 : 0;
+        return $this->isBlank($result) ? 0 : 1;
     }
 }

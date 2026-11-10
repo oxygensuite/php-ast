@@ -4,6 +4,7 @@ namespace OxygenSuite\PhpAst\AST;
 
 use OxygenSuite\PhpAst\ContextProvider\ContextProvider;
 use OxygenSuite\PhpAst\ContextProvider\DataResolver;
+use OxygenSuite\PhpAst\ContextProvider\ScopeResolver;
 use OxygenSuite\PhpAst\ContextProvider\WildcardResolver;
 use OxygenSuite\PhpAst\Formulas\ASTFormula;
 use OxygenSuite\PhpAst\Formulas\FormulaRegistry;
@@ -27,6 +28,17 @@ class ASTEvaluator implements ASTVisitor, WildcardPathVisitor
     private Tokenizer $tokenizer;
     private ASTCache $cache;
     private ?WildcardResolver $wildcardResolver;
+    private ?ScopeResolver $scopeResolver;
+
+    /**
+     * The items of MAP() and FILTER() being evaluated, innermost first, each with the path of its list
+     *
+     * @var list<array{item: array, path: ?string}>
+     */
+    private array $items = [];
+
+    /** The data the formula is evaluated with, which a name no item of MAP() or FILTER() has is read from */
+    private array $data = [];
 
     /** The paths a WildcardResolver gave that still have wildcards, parsed, apart from the formulas */
     private ASTCache $resolvedPaths;
@@ -37,6 +49,7 @@ class ASTEvaluator implements ASTVisitor, WildcardPathVisitor
         $this->tokenizer = new Tokenizer();
         $this->cache = new ASTCache();
         $this->wildcardResolver = $contextProvider instanceof WildcardResolver ? $contextProvider : null;
+        $this->scopeResolver = $contextProvider instanceof ScopeResolver ? $contextProvider : null;
         $this->resolvedPaths = new ASTCache(100);
     }
 
@@ -45,16 +58,23 @@ class ASTEvaluator implements ASTVisitor, WildcardPathVisitor
      */
     public function evaluate(string $formula, array $data): mixed
     {
-        // A plain path, such as "summary.total_net_amount", is read as the variable it parses to, without parsing it
-        $path = trim($formula);
-        if (preg_match('/^[A-Za-z_][A-Za-z0-9_.]*$/', $path)) {
-            return $this->dataResolver->resolveVariable($path, $data);
+        $previous = $this->data;
+        $this->data = $data;
+
+        try {
+            // A plain path, such as "summary.total_net_amount", is read as the variable it parses to, without parsing it
+            $path = trim($formula);
+            if (preg_match('/^[A-Za-z_][A-Za-z0-9_.]*$/', $path)) {
+                return $this->variable($path, $data);
+            }
+
+            // Evaluate AST with data context
+            $this->currentDepth = 0;
+
+            return $this->parse($this->cache, $formula)->accept($this, $data);
+        } finally {
+            $this->data = $previous;
         }
-
-        // Evaluate AST with data context
-        $this->currentDepth = 0;
-
-        return $this->parse($this->cache, $formula)->accept($this, $data);
     }
 
     public function visitLiteral(LiteralNode $node, array $context): mixed
@@ -64,7 +84,63 @@ class ASTEvaluator implements ASTVisitor, WildcardPathVisitor
 
     public function visitVariable(VariableNode $node, array $context): mixed
     {
-        return $this->dataResolver->resolveVariable($node->path, $context);
+        return $this->variable($node->path, $context);
+    }
+
+    /**
+     * Evaluates a node once for an item of a list, as MAP() and FILTER() do: a name the item has reads the item, and
+     * any other the scopes outside it
+     *
+     * @param ?string $path The path of the item's list as the formula writes it, see listPath()
+     */
+    public function evaluateItem(ASTNode $node, array $item, ?string $path): mixed
+    {
+        array_unshift($this->items, ['item' => $item, 'path' => $path]);
+
+        try {
+            return $node->accept($this, $item);
+        } finally {
+            array_shift($this->items);
+        }
+    }
+
+    /**
+     * The path of the list a node gives, as the formula writes it, when it is a path or the items of one kept by a
+     * function that keeps its list's items: "taxes" for taxes and FILTER(taxes; amount > 0)
+     */
+    public function listPath(ASTNode $node): ?string
+    {
+        if ($node instanceof VariableNode || $node instanceof WildcardPathNode) {
+            return $node->path;
+        }
+
+        if (! $node instanceof FunctionNode || $node->arguments === []) {
+            return null;
+        }
+
+        $handler = FormulaRegistry::getHandlerByName($node->name);
+
+        return $handler !== null && FormulaRegistry::definitionOf($handler)->keepsItems ? $this->listPath($node->arguments[0]) : null;
+    }
+
+    /**
+     * The value of a name, as a ScopeResolver finds it. Without one: of the innermost item of MAP() or FILTER() that
+     * has it, else the context provider's, else the data's
+     */
+    private function variable(string $path, array $context): mixed
+    {
+        if ($this->scopeResolver !== null) {
+            return $this->scopeResolver->resolveName($path, $this->items);
+        }
+
+        $name = explode('.', $path, 2)[0];
+        foreach ($this->items as $scope) {
+            if (array_key_exists($name, $scope['item'])) {
+                return $this->dataResolver->resolve($scope['item'], $path);
+            }
+        }
+
+        return $this->dataResolver->resolveVariable($path, $this->items === [] ? $context : $this->data);
     }
 
     /**
@@ -79,7 +155,7 @@ class ASTEvaluator implements ASTVisitor, WildcardPathVisitor
         }
 
         if (! str_contains($path, '*')) {
-            return $this->dataResolver->resolveVariable($path, $context);
+            return $this->variable($path, $context);
         }
 
         $resolved = $this->parse($this->resolvedPaths, $path);

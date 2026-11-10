@@ -13,6 +13,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     minArguments: 1,
     maxArguments: 1,
     listArgument: 0,
+    keepsItems: true,
 )]
 readonly class SortFunction implements Formula
 {

@@ -18,6 +18,7 @@ use OxygenSuite\PhpAst\Formulas\FunctionDefinition;
     itemArgument: 1,
     listArgument: 0,
     keepsKeys: true,
+    keepsItems: true,
 )]
 readonly class FilterFunction implements ASTFormula
 {
@@ -37,8 +38,10 @@ readonly class FilterFunction implements ASTFormula
             return [];
         }
 
-        return array_filter($items, function ($item) use ($evaluator, $conditionNode) {
-            $result = $conditionNode->accept($evaluator, $item);
+        $path = $evaluator->listPath($itemsNode);
+
+        return array_filter($items, function ($item) use ($evaluator, $conditionNode, $path) {
+            $result = $evaluator->evaluateItem($conditionNode, $item, $path);
 
             return $this->isTruthy($result);
         });

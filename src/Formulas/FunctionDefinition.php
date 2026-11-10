@@ -22,6 +22,7 @@ final readonly class FunctionDefinition
      * @param bool $listArgumentAlone Whether it reads that argument as a list only when it is the only one, as SUM()
      *                                does, which otherwise adds up its arguments
      * @param bool $keepsKeys Whether its result keeps the keys of its first argument, as FILTER() does
+     * @param bool $keepsItems Whether its result is items of its first argument, as FILTER() and SORT() give
      */
     public function __construct(
         public string $signature,
@@ -33,6 +34,7 @@ final readonly class FunctionDefinition
         public ?int $listArgument = null,
         public bool $listArgumentAlone = false,
         public bool $keepsKeys = false,
+        public bool $keepsItems = false,
     ) {}
 
     /**

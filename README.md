@@ -182,7 +182,8 @@ $evaluator = new FormulaEvaluator(new MyContext());
 $evaluator->evaluate('unit_price * tax_rate', $data); // uses tax_rate from context
 ```
 
-Context values take priority over data array values.
+Context values take priority over data array values. Inside `MAP()` and `FILTER()`, a field the item has comes first:
+in `MAP(lines; amount * tax_rate)`, `amount` is each line's even when the context has an `amount` too.
 
 ### Wildcard Resolvers
 
@@ -216,8 +217,44 @@ $evaluator->evaluate('lines.*.net_amount / SUM(lines.*.net_amount)', $data); // 
 ```
 
 A function's `#[FunctionDefinition]` says which argument it reads as a list (`listArgument`), whether only when it is
-the only argument (`listArgumentAlone`, as for `SUM`, which otherwise adds up its arguments), and whether its result
-keeps the keys of that list (`keepsKeys`, as for `FILTER` and `MAP`).
+the only argument (`listArgumentAlone`, as for `SUM`, which otherwise adds up its arguments), whether its result
+keeps the keys of that list (`keepsKeys`, as for `FILTER` and `MAP`), and whether its result is items of that list
+(`keepsItems`, as for `FILTER` and `SORT`).
+
+### Scope Resolvers
+
+A context provider that also implements `ScopeResolver` reads every name of a formula itself. It gets the name as the
+formula writes it and the items of `MAP()` and `FILTER()` it is read in, innermost first, each with the path of its
+list when that is a path (`taxes` in `MAP(FILTER(taxes; amount > 0); amount)`), and returns the name's value. It can so
+decide which scope a name belongs to, an item, a loop of its own or the data, by a schema rather than by the keys an
+item happens to have:
+
+```php
+use OxygenSuite\PhpAst\ContextProvider\ContextProvider;
+use OxygenSuite\PhpAst\ContextProvider\ScopeResolver;
+
+class Scoped implements ContextProvider, ScopeResolver
+{
+    public function __construct(private array $data) {}
+
+    public function getContextValue(string $key): mixed
+    {
+        return $this->resolveName($key, []);
+    }
+
+    public function resolveName(string $path, array $items): mixed
+    {
+        // A line's "discount" is the line's, also on a line without one
+        foreach ($items as ['item' => $item, 'path' => $list]) {
+            if ($list === 'lines' && $path === 'discount') {
+                return $item['discount'] ?? null;
+            }
+        }
+
+        return $this->data[$path] ?? null;
+    }
+}
+```
 
 ## Custom Functions
 

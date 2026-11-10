@@ -35,8 +35,10 @@ readonly class MapFunction implements ASTFormula
             return [];
         }
 
+        $path = $evaluator->listPath($itemsNode);
+
         return array_map(
-            fn($item) => $callbackNode->accept($evaluator, $item),
+            fn($item) => $evaluator->evaluateItem($callbackNode, $item, $path),
             $items,
         );
     }
